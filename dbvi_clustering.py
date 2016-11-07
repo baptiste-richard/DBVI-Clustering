@@ -8,6 +8,7 @@ import matplotlib as plt
 plt.style.use('ggplot')
 import random
 from sklearn.cluster import KMeans
+import networkx as nx
 
 
 # using polar coordinates, we define a point generator on a ball with given radius and center
@@ -131,3 +132,18 @@ for j in range(0,len(clusters[0])):
 # plot one graph to give an example of complete graph
 plt.pyplot.figure(figsize=(12,10))   
 nx.draw(G0,pos0)
+
+# compute and plot minimum spanning tree
+min_tree_0 = nx.minimum_spanning_tree(G0)
+plt.pyplot.figure(figsize=(12,10))   
+nx.draw(min_tree_0)
+
+# compute Density Sparsness of Cluster as the max weight of our MST
+max_weight_0 = 0
+ind_max_0 = -1
+for i in range(0,len(min_tree_0.edges())):
+    if min_tree_0.edges(data=True)[i][2]['weight'] > max_weight_0:
+        max_weight_0 = min_tree_0.edges(data=True)[i][2]['weight']
+        ind_max_0 = i
+DSC_C0 = max_weight_0
+
