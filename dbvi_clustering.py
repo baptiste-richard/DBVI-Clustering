@@ -115,3 +115,19 @@ def mr_distance(clusters,num_clus,pos_clus_x,pos_clus_y):
     return max(core_dist_x,core_dist_y,euc_dist_xy)
 
 
+# generate MR Graphs using networkx
+# MR graph is undirected, complete - nodes correpond to data points in cluster, weights to MR distance
+# Note: we can verify that we get n(n-1)/2 arcs for each complete graph
+
+G0 = nx.Graph()
+for i in range(0,len(clusters[0])):
+    G0.add_node(i,pos0=(clusters[0][i][0],clusters[0][i][1]))
+    pos0=nx.get_node_attributes(G0,'pos0')
+
+for j in range(0,len(clusters[0])):
+    for i in range(1+j,len(clusters[0])):
+        G0.add_edge(j, i, weight = mr_distance(clusters,0,j,i))
+        
+# plot one graph to give an example of complete graph
+plt.pyplot.figure(figsize=(12,10))   
+nx.draw(G0,pos0)
