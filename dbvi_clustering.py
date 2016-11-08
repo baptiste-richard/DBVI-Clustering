@@ -97,9 +97,22 @@ for i in range(0,len(clusters)):
 # 2. DBVI Clustering
 # Algorithm implementation following Davoud Moulavi - Pablo A. Jaskowiak† - Ricardo J. G. B. - Campello† Arthur Zimek† - Jörg Sander work.
 
+# DVBI is a dictionary where we will store all of our results
+'''
+[0] --> complete undirected MR Graph
+[1] --> Minimum Spanning Tree (MST) coresponding to MR Graph
+[2] --> Density Sparsness of Cluster (DSC), i.e. max weight of MST
+[3] --> Reduced graph including internal nodes from previously created MST
+[4] --> List of Lists correponding to internal nodes coordinates [0],[1] and core distances [2]
+[5] --> List of smallest MR distances to other clusters
+[6] --> Validity Index of cluster (end result)
+'''
+
+DBVI = {}
+
 # core distance definition
-def core_dist(clusters,num_clus,pos_clus):
-    active_cluster = list(clusters[num_clus])
+def core_dist(cluster,pos_clus):
+    active_cluster = list(cluster)
     x = active_cluster.pop(pos_clus)
     knn_sum = 0
     for i in range(0,len(active_cluster)):
@@ -107,43 +120,106 @@ def core_dist(clusters,num_clus,pos_clus):
     core_dist = (float(knn_sum)/float(len(active_cluster)))**(-1/d)
     return core_dist
 
+
 # MR distance definition
-def mr_distance(clusters,num_clus,pos_clus_x,pos_clus_y):
-    active_cluster = list(clusters[num_clus])
-    core_dist_x = core_dist(clusters,num_clus,pos_clus_x)
-    core_dist_y = core_dist(clusters,num_clus,pos_clus_y)
+def mr_distance(cluster,pos_clus_x,pos_clus_y):
+    active_cluster = list(cluster)
+    core_dist_x = core_dist(cluster,pos_clus_x)
+    core_dist_y = core_dist(cluster,pos_clus_y)
     euc_dist_xy = np.sqrt((active_cluster[pos_clus_x][0]-active_cluster[pos_clus_y][0])**2+(active_cluster[pos_clus_x][1]-active_cluster[pos_clus_y][1])**2)
     return max(core_dist_x,core_dist_y,euc_dist_xy)
 
-
-# generate MR Graphs using networkx
+# MR Graphs definition using networkx
 # MR graph is undirected, complete - nodes correpond to data points in cluster, weights to MR distance
 # Note: we can verify that we get n(n-1)/2 arcs for each complete graph
+def create_mr_graph(clusters):
+    for k in range(0,len(clusters)):
+        G = nx.Graph()
+        for i in range(0,len(clusters[k])):
+            G.add_node(i,pos=[clusters[k][i][0],clusters[k][i][1]])
+            #pos=nx.get_node_attributes(G,'pos')
 
-G0 = nx.Graph()
-for i in range(0,len(clusters[0])):
-    G0.add_node(i,pos0=(clusters[0][i][0],clusters[0][i][1]))
-    pos0=nx.get_node_attributes(G0,'pos0')
+        for j in range(0,len(clusters[k])):
+            for i in range(1+j,len(clusters[k])):
+                G.add_edge(j, i, weight = mr_distance(clusters[k],j,i))
+        DBVI["cluster%s"%k] = [G]
 
-for j in range(0,len(clusters[0])):
-    for i in range(1+j,len(clusters[0])):
-        G0.add_edge(j, i, weight = mr_distance(clusters,0,j,i))
-        
-# plot one graph to give an example of complete graph
-plt.pyplot.figure(figsize=(12,10))   
-nx.draw(G0,pos0)
+create_mr_graph(clusters)
 
-# compute and plot minimum spanning tree
-min_tree_0 = nx.minimum_spanning_tree(G0)
-plt.pyplot.figure(figsize=(12,10))   
-nx.draw(min_tree_0)
 
 # compute Density Sparsness of Cluster as the max weight of our MST
-max_weight_0 = 0
-ind_max_0 = -1
-for i in range(0,len(min_tree_0.edges())):
-    if min_tree_0.edges(data=True)[i][2]['weight'] > max_weight_0:
-        max_weight_0 = min_tree_0.edges(data=True)[i][2]['weight']
-        ind_max_0 = i
-DSC_C0 = max_weight_0
+def DSC(DBVI):
+    for k in range(0,len(DBVI)):
+        # 1. minimum spanning tree
+        min_tree = nx.minimum_spanning_tree(DBVI["cluster%s"%k][0])
 
+        # 2. compute maximum weight of this MST
+        max_weight = 0
+        ind_max = -1
+        for j in range(0,len(min_tree.edges())):
+            if min_tree.edges(data=True)[j][2]['weight'] > max_weight:
+                max_weight = min_tree.edges(data=True)[j][2]['weight']
+                ind_max = j
+        DSC = max_weight
+        
+        # 3. store results in existing dictionary
+        DBVI["cluster%s"%k].append(min_tree)
+        DBVI["cluster%s"%k].append(max_weight)
+
+        
+DSC(DBVI)
+
+
+# compute Density Separation Between Pairs of Clusters (DSPC)
+
+def DSPC(DBVI):
+    # 1. create subgraph of internal nodes only - position [3] of dictionnary
+    for k in range(0,len(DBVI)):
+        min_tree_int = DBVI["cluster%s"%k][1].copy()
+        for node in min_tree_int.degree().keys():
+            if min_tree_int.degree()[node] == 1:
+                min_tree_int.remove_node(node)
+        DBVI["cluster%s"%k].append(min_tree_int)
+    
+    # 2. transform graph object in list of list to compute distances easily - position [4] of dictionnary
+        X = [] 
+        for i in range(0,len(DBVI["cluster%s"%k][3].nodes(data=True))):
+            X.append(DBVI["cluster%s"%k][3].nodes(data=True)[i][1]['pos'])
+        DBVI["cluster%s"%k].append(X)
+        
+    # 3. compute core distance of each internal point of each cluster and append it to point lists
+        for j in range(0,len(DBVI["cluster%s"%k][4])):
+            DBVI["cluster%s"%k][4][j].append(core_dist(DBVI["cluster%s"%k][4],j))
+            
+    # 4. create variables in dictionary for smallest mr distances to other clusters
+        smallest_mr_dist = []
+        for l in range(0,len(DBVI)):
+            smallest_mr_dist.append(0)
+        DBVI["cluster%s"%k].append(smallest_mr_dist)
+            
+    # 5. compute density separation for each cluster - iterate on each point of each clusters 2 by 2
+    for k1 in range(0,len(DBVI)):
+        for k2 in range(1+k1,len(DVBI)):
+            dspc = 1000000
+            for p1 in range(0,len(DBVI["cluster%s"%k1][4])):
+                for p2 in range(0,len(DBVI["cluster%s"%k2][4])):
+                    euc_dist = np.sqrt((DBVI["cluster%s"%k1][4][p1][0]-DBVI["cluster%s"%k2][4][p2][0])**2+(DBVI["cluster%s"%k1][4][p1][1]-DBVI["cluster%s"%k2][4][p2][1])**2)
+                    mr_dist = max(euc_dist,DBVI["cluster%s"%k1][4][p1][2],DBVI["cluster%s"%k2][4][p2][2])
+                    if mr_dist < dspc:
+                        dspc = mr_dist
+            DBVI["cluster%s"%k1][5][k2] = dspc
+            DBVI["cluster%s"%k2][5][k1] = dspc
+                
+DSPC(DBVI)
+
+
+# compute Validity Index of each cluster
+def VIC(DBVI):
+    for k in range(0,len(DBVI)):
+        min_dspc = min(i for i in DBVI["cluster%s"%k][5] if i > 0)
+        dsc = DBVI["cluster%s"%k][2]
+        V = (min_dspc-dsc)/(max(min_dspc,dsc))
+        DBVI["cluster%s"%k].append(V)
+        
+        
+VIC(DBVI)
