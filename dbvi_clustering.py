@@ -10,10 +10,8 @@ import random
 from sklearn.cluster import KMeans
 import networkx as nx
 
-
 # using polar coordinates, we define a point generator on a ball with given radius and center
 # radius is defined as a positive number
-# center is an array of size 3 - cartesian coordinates
 
 #problem dimension - set to R2 feature space
 d = 2
