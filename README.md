@@ -35,6 +35,11 @@ The heuristic we present here searches the matrix A_MST(m) and sequentially remo
 
 ***
 
+DBVI-Clustering/heuristic_1.png
+
+DBVI-Clustering/heuristic_2.png
+
+***
 Implementation of DBVI clustering method --> Density-Based Clustering Validation
 
 http://epubs.siam.org/doi/pdf/10.1137/1.9781611973440.96 [1]
