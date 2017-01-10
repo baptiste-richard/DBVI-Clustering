@@ -17,21 +17,19 @@ import networkx as nx
 from scipy.sparse.csgraph import minimum_spanning_tree
 from scipy.sparse import csr_matrix
 import copy
-import dbvi_computation3
+import dbvi_computation
 
 ###############################################################################
 # Parameters
-N=400
-k=10
-d=2
+N=400 # number of points in test dataset
+k=10  # number of closest neighbors considered to compute core distances initially
+d=2   # feature space dimension
 ###############################################################################
 
 
 ###############################################################################
 # Generate a random data set in R2 (disregard the class)
 # Change features, informative etc. to change distribution of data
-
-
 
 ###############################################################################
 def rand_ball_gen(radius,center):
@@ -66,82 +64,6 @@ plt.figure(figsize=(20, 14))
 plt.scatter(X[:, 0], X[:, 1], marker='o',s=80, alpha = 0.5) # add ", c=Y" to get class
 plt.savefig('balls_.png')
 ###############################################################################
-
-
-"""###############################################################################
-plt.subplot(322)
-plt.title("Two informative features, one cluster per class", fontsize='large')
-X, Y = make_classification(n_samples=N,n_features=2, n_redundant=1, n_informative=1, n_clusters_per_class=1, random_state=3)
-#X, Y = make_blobs(n_features=2, centers=3, random_state=1)
-X, Y =  sklearn.datasets.make_moons(n_samples=N, shuffle=True, noise=None, random_state=None)
-plt.figure(figsize=(10, 10))
-plt.scatter(X[:, 0], X[:, 1], marker='o',alpha=0.5) # add ", c=Y" to get class 
-plt.show()
-###############################################################################"""
-
-
-"""###############################################################################
-plt.subplot(322)
-plt.title("Two informative features, one cluster per class", fontsize='large')
-#X, Y = make_classification(n_samples=N,n_features=2, n_redundant=1, n_informative=1, n_clusters_per_class=1, random_state=7)
-#X, Y = make_blobs(n_samples=N,n_features=2, centers=3, random_state=1)
-X, Y =  sklearn.datasets.make_moons(n_samples=N, shuffle=True, noise=None, random_state=None)
-
-plt.figure(figsize=(20, 14))
-plt.scatter(X[:, 0], X[:, 1], marker='o',s=80,alpha=0.5) # add ", c=Y" to get class 
-plt.savefig('line_.png')
-###############################################################################"""
-
-
-"""###############################################################################
-def create_half_doughnut(center, radius_lim, orientation):
-    r_min, r_max = radius_lim[0], radius_lim[1]
-    r = np.random.uniform(r_min, r_max)
-    theta = (-1) ** (orientation == 'down') * np.random.uniform(-np.pi/12, 13*np.pi/12)
-    
-    x = center[0] + r * np.cos(theta)
-    y = center[1] + r * np.sin(theta)
-    return([x,y])
-    
-center1 = [0, 0]
-center2 = [1, 0]
-
-cluster1 = [create_half_doughnut(center1, [0.75, 1.25], 'up') for i in range(int(N/2))]
-cluster2 = [create_half_doughnut(center2, [0.75, 1.25], 'down') for i in range(int(N/2))]
-noise = [[np.random.uniform(-1.5, 2.5), np.random.uniform(-1.5, 1.5)] for i in range(0)]
-X = np.array(cluster1 + cluster2)
-np.random.shuffle(X)
-
-plt.figure(figsize=(20, 14))
-plt.scatter([xy[0] for xy in cluster1], [xy[1] for xy in cluster1],c='b',s=80,alpha=0.5)
-plt.scatter([xy[0] for xy in cluster2], [xy[1] for xy in cluster2],c='b',s=80,alpha=0.5)
-plt.scatter([xy[0] for xy in noise], [xy[1] for xy in noise], c='blue')
-plt.savefig('doughnut_.png')
-###############################################################################"""
-
-
-"""###############################################################################
-def create_ring(center, radius_lim):
-    r_min, r_max = radius_lim[0], radius_lim[1]
-    r = np.random.uniform(r_min, r_max)
-    theta = np.random.uniform(-np.pi, np.pi)
-    
-    x = center[0] + r * np.cos(theta)
-    y = center[1] + r * np.sin(theta)
-    return([x,y])
-    
-cluster1 = [create_ring([0, 0], [0.5, 1]) for i in range(int(N/2))]
-cluster2 = [create_ring([0, 0], [2.0, 2.5]) for i in range(int(N/2))]
-noise = [[np.random.uniform(-3, 3), np.random.uniform(-3, 3)] for i in range(0)]
-X = np.array(cluster1 + cluster2 + noise)
-np.random.shuffle(X)
-
-plt.figure(figsize=(20, 14))
-plt.scatter([xy[0] for xy in cluster1], [xy[1] for xy in cluster1],c='b',s=80, alpha=0.5)
-plt.scatter([xy[0] for xy in cluster2], [xy[1] for xy in cluster2],c='b',s=80, alpha=0.5)
-plt.scatter([xy[0] for xy in noise], [xy[1] for xy in noise], c='blue')
-plt.savefig('ring_.png')
-###############################################################################"""
 
 
 ###############################################################################
@@ -311,14 +233,7 @@ while (p<20 and end==0):
         for point in a_cluster:
             all_data['cluster'][point] = cluster_number
         cluster_number += 1
-    #print(all_data)
-    
-    # define colors - only for the purpose of our example only (delete in final code)
-    all_data.loc[(all_data["cluster"] == 0), "color"] = "b"
-    all_data.loc[(all_data["cluster"] == 1), "color"] = "r"
-    all_data.loc[(all_data["cluster"] == 2), "color"] = "g"
-    all_data.loc[(all_data["cluster"] == 3), "color"] = "y"
-    all_data.loc[(all_data["cluster"] == 4), "color"] = "c"     
+    #print(all_data)   
     
     
     DBVIndex,DBVI = dbvi_computation3.DBVI_comp(all_data)         #compute dbvi
