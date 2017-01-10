@@ -1,6 +1,8 @@
 # DBVI Clustering Heuristic
 Authors: Baptiste R. - Vincent F. - Antoine C.
 
+### Introduction
+
 The Density Based Validation Index (DBVI), as developed by Davoud Moulavi Et al [1], provides a good way of measuring the quality of a clustering based on within-cluster density and on between-cluster density connectedness. Through a newly defined kernel density function, such index efficiently assesses the quality of a given clustering, independently of whether or not the clusters are globular.
 
 Though such method allows to accurately rate a given clustering solution, the paper does not provide an algorithm allowing to find such a clustering. We therefore present a clustering algorithm, inspired from the DBVI methodology, that relies on the density sparseness inside a given cluster as well as on the separation between distinct clusters, in the mutual reachability space.
@@ -8,6 +10,8 @@ Though such method allows to accurately rate a given clustering solution, the pa
 Interestingly, this heuristic is basically non-parametric, as it requires no assumptions regarding the number of clusters for instance. Moreover, the resulting clustering seems to not only be the ground truth clustering, but to also coincide with the very iteration of the algorithm where the DBVI value is maximized. Such results call for further theoretical research regarding the convexity of the DBVI values as the algorithm iterates.
 
 ***
+
+### Key Concepts
 
 The Clustering Heuristic presented here relies on the following concepts defined in Davoud Moulavi Et al:
 
@@ -22,6 +26,8 @@ The Clustering Heuristic presented here relies on the following concepts defined
 
 ***
 
+### Heuristic Description
+
 The goal of this heuristic is to proceed to sequential removals of some targeted edges of MST(G). Such operation will yield a disconnected graph, whose fully connected sub-graphs will correspond to the final clusters. We wish to repeat the above operation several time so as to gradually improve the quality of the resulting clustering. Before describing these steps, we make the following remarks regarding the notations we use:
 
 1. After removing an edge from the initial MST(G), the graph is therefore disconnected. However, for notation purposes, we denote that disconnected graph as MST(1)(G).
@@ -31,15 +37,23 @@ The goal of this heuristic is to proceed to sequential removals of some targeted
   - aij(m) = aji(m) = 0 if there does not exist an edge between xi and xj in MST(m)(G)
   - aij(m) = aji(m) = MR(xi,xj) if there exists an edge between xi and xj in MST(m)(G)
 
-The heuristic we present here searches the matrix A_MST(m) and sequentially remove some of its heaviest edges, so as to create clusters that have low density sparseness, and high density separation with other clusters. Empirically, it turned out that the ground truth clustering seems to be reached whenever the DBVI value of the current clustering is maximized. The algorithm therefore uses this fact as stopping condition.
+The heuristic we present here searches the matrix A_MST(m) and sequentially remove some of its heaviest edges, so as to create clusters that have low density sparseness, and high density separation with other clusters. Empirically, it turned out that the ground truth clustering seems to be reached whenever the DBVI value of the current clustering is maximized. The algorithm therefore uses this fact as stopping condition:
+
+![heuristic_description](https://cloud.githubusercontent.com/assets/22781896/21809376/b50e923e-d747-11e6-922f-47369c8aebc6.png)
 
 ***
 
-DBVI-Clustering/heuristic_1.png
+### Results & Applications
 
-DBVI-Clustering/heuristic_2.png
+![globular_1](https://cloud.githubusercontent.com/assets/22781896/21809374/b4f0d276-d747-11e6-83c7-d35b3c98fa45.png)
+![globular_2](https://cloud.githubusercontent.com/assets/22781896/21809375/b504e2f2-d747-11e6-8fd2-e91b35adbbd9.png)
+
+![moon](https://cloud.githubusercontent.com/assets/22781896/21809377/b50f6736-d747-11e6-9742-97598189d273.png)
+
+![line_ring](https://cloud.githubusercontent.com/assets/22781896/21809378/b50f9b5c-d747-11e6-8dcd-514f9514598d.png)
 
 ***
-Implementation of DBVI clustering method --> Density-Based Clustering Validation
+
+### References
 
 http://epubs.siam.org/doi/pdf/10.1137/1.9781611973440.96 [1]
