@@ -22,9 +22,18 @@ The Clustering Heuristic presented here relies on the following concepts defined
 
 ***
 
-The goal of this heuristic is to proceed to sequential removals of some targeted edges of MST(G). Such operation will yield a disconnected graph, whose fully connected sub-graphs will correspond to the final clusters. We wish to repeat the above operation several time so as to gradually improve the quality of the resulting clustering.
+The goal of this heuristic is to proceed to sequential removals of some targeted edges of MST(G). Such operation will yield a disconnected graph, whose fully connected sub-graphs will correspond to the final clusters. We wish to repeat the above operation several time so as to gradually improve the quality of the resulting clustering. Before describing these steps, we make the following remarks regarding the notations we use:
 
-The heuristic we present sequentially removes some of the MST heaviest edges so as to create clusters that have low density sparseness, and high density separation with other clusters. Empirically, it turned out that the ground truth clustering seems to be reached whenever the DBVI value of the current clustering is maximized. The algorithm therefore uses this fact as stopping condition.
+1. After removing an edge from the initial MST(G), the graph is therefore disconnected. However, for notation purposes, we denote that disconnected graph as MST(1)(G).
+2. More generally, MST(m+1)(G) is the graph obtained via the removal of the heaviest edge from MST(m)(G).
+3. Finally, we notice that the number of clusters at the m−th step is m+1, which is also the number of fully connected sub-graphs of MST(m)(G).
+4. Recall that MST(m)(G) can simply be represented as a symmetric matrix, A_MST(m) = {a(m)} where, 
+  - aij(m) = aji(m) = 0 if there does not exist an edge between xi and xj in MST(m)(G)
+  - aij(m) = aji(m) = MR(xi,xj) if there exists an edge between xi and xj in MST(m)(G)
+
+The heuristic we present here searches the matrix A_MST(m) and sequentially remove some of its heaviest edges, so as to create clusters that have low density sparseness, and high density separation with other clusters. Empirically, it turned out that the ground truth clustering seems to be reached whenever the DBVI value of the current clustering is maximized. The algorithm therefore uses this fact as stopping condition.
+
+***
 
 Implementation of DBVI clustering method --> Density-Based Clustering Validation
 
