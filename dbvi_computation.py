@@ -1,6 +1,6 @@
 """
 Heuristic for high DBVI clustering
-@authors: Baptiste R. & Vincent F. 
+@authors: Baptiste R. & Vincent F. & Antoine C.
 """
 
 import pandas as pd 
